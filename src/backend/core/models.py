@@ -793,6 +793,7 @@ class Item(TreeModel, BaseModel):
             "breadcrumb": can_get,
             "children_list": can_get,
             "children_create": can_create_children,
+            "children_create": can_update and user.is_authenticated,
             "destroy": can_destroy,
             "hard_delete": can_hard_delete,
             "favorite": can_get and user.is_authenticated,
