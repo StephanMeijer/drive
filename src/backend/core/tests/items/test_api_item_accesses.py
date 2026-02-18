@@ -4,7 +4,10 @@ Test item accesses API endpoints for users in drive's core app.
 # pylint: disable=too-many-lines
 
 import random
+from unittest import mock
 from uuid import uuid4
+
+from django.test import override_settings
 
 import pytest
 from lasuite.drf.models.choices import PRIVILEGED_ROLES, RoleChoices
@@ -2333,3 +2336,81 @@ def test_api_item_accesses_in_tree():
             "is_explicit": False,
         },
     ]
+
+
+# Posthog events
+
+
+@override_settings(POSTHOG_KEY="fake-key")
+def test_api_item_accesses_update_posthog_event_on_role_change():
+    """Updating an access role should send an 'item_access_updated' event."""
+    user = factories.UserFactory()
+    other_user = factories.UserFactory()
+    item = factories.ItemFactory(users=[(user, "owner")])
+    access = factories.UserItemAccessFactory(item=item, user=other_user, role="editor")
+
+    client = APIClient()
+    client.force_login(user)
+
+    with mock.patch("core.api.viewsets.posthog_capture") as mock_capture:
+        response = client.patch(
+            f"/api/v1.0/items/{item.id!s}/accesses/{access.id!s}/",
+            {"role": "reader"},
+            format="json",
+        )
+
+    assert response.status_code == 200
+    mock_capture.assert_called_once_with(
+        "item_access_updated",
+        user,
+        {"id": access.id, "role": "reader", "old_role": "editor"},
+        item=item,
+    )
+
+
+@override_settings(POSTHOG_KEY="fake-key")
+def test_api_item_accesses_update_no_posthog_event_without_role_change():
+    """Updating an access without changing the role should not send any event."""
+    user = factories.UserFactory()
+    other_user = factories.UserFactory()
+    item = factories.ItemFactory(users=[(user, "owner")])
+    access = factories.UserItemAccessFactory(item=item, user=other_user, role="editor")
+
+    client = APIClient()
+    client.force_login(user)
+
+    with mock.patch("core.api.viewsets.posthog_capture") as mock_capture:
+        response = client.patch(
+            f"/api/v1.0/items/{item.id!s}/accesses/{access.id!s}/",
+            {"role": "editor"},
+            format="json",
+        )
+
+    assert response.status_code == 200
+    mock_capture.assert_not_called()
+
+
+@override_settings(POSTHOG_KEY="fake-key")
+def test_api_item_accesses_delete_posthog_event():
+    """Deleting an access should send an 'item_access_deleted' event."""
+    user = factories.UserFactory()
+    other_user = factories.UserFactory()
+    item = factories.ItemFactory(users=[(user, "owner")])
+    access = factories.UserItemAccessFactory(item=item, user=other_user, role="reader")
+    access_id = access.id
+
+    client = APIClient()
+    client.force_login(user)
+
+    with mock.patch("core.api.viewsets.posthog_capture") as mock_capture:
+        response = client.delete(
+            f"/api/v1.0/items/{item.id!s}/accesses/{access.id!s}/",
+        )
+
+    assert response.status_code == 204
+    mock_capture.assert_called_once_with(
+        "item_access_deleted",
+        user,
+        {"id": access_id, "role": "reader"},
+        item=item,
+    )

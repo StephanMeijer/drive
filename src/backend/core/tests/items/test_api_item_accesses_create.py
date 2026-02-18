@@ -3,9 +3,11 @@ Test item accesses API endpoints for users in drive's core app.
 """
 
 import random
+from unittest import mock
 
 from django.conf import settings
 from django.core import mail
+from django.test import override_settings
 
 import pytest
 from rest_framework.test import APIClient
@@ -470,3 +472,33 @@ def test_api_item_accesses_create_authenticated_owner_syncronize_descendants_acc
 
     # access on item should be kept
     assert models.ItemAccess.objects.filter(item=item, user=other_user).count() == 1
+
+
+# Posthog events
+
+
+@override_settings(POSTHOG_KEY="fake-key")
+def test_api_item_accesses_create_posthog_event():
+    """Creating an item access should send an 'item_access_created' event."""
+    user = factories.UserFactory()
+    other_user = factories.UserFactory()
+    item = factories.ItemFactory(users=[(user, "owner")])
+
+    client = APIClient()
+    client.force_login(user)
+
+    with mock.patch("core.api.viewsets.posthog_capture") as mock_capture:
+        response = client.post(
+            f"/api/v1.0/items/{item.id!s}/accesses/",
+            {"user_id": str(other_user.id), "role": "editor"},
+            format="json",
+        )
+
+    assert response.status_code == 201
+    access = models.ItemAccess.objects.get(user=other_user, item=item)
+    mock_capture.assert_called_once_with(
+        "item_access_created",
+        user,
+        {"id": access.id, "role": "editor"},
+        item=item,
+    )
