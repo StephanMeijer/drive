@@ -15,6 +15,9 @@ and this project adheres to
 - ✨(global) add release notes
 - ✨(front) show root page in breadcrumbs when navigating
 - ✨(front) filter recent items to only show files
+- 📈(backend) add posthog tracking to item actions
+- 📈(front) add posthog tracking to share modal
+- ✅(front) add e2e tests for posthog share events
 
 ### Changed
 
@@ -307,4 +310,5 @@ and this project adheres to
 [v0.2.0]: https://github.com/suitenumerique/drive/releases/v0.2.0
 [v0.1.1]: https://github.com/suitenumerique/drive/releases/v0.1.1
 [v0.1.0]: https://github.com/suitenumerique/drive/releases/v0.1.0
+
 ## [v0.11.1] - 2026-01-13
