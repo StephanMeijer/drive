@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- 🐛(global) update ui when renaming file from wopi editor + customize wopi parameters
+
 ## [v0.13.0] - 2026-02-18
 
 ### Added
@@ -310,4 +314,5 @@ and this project adheres to
 [v0.2.0]: https://github.com/suitenumerique/drive/releases/v0.2.0
 [v0.1.1]: https://github.com/suitenumerique/drive/releases/v0.1.1
 [v0.1.0]: https://github.com/suitenumerique/drive/releases/v0.1.0
+
 ## [v0.11.1] - 2026-01-13
