@@ -11,6 +11,8 @@ server {
 	server_name _;
 
     root /app/build/frontend-out;
+
+    add_header Permissions-Policy "clipboard-read=*, clipboard-write=*" always;
     
     error_page 404 /404.html;
 
