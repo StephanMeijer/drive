@@ -25,7 +25,7 @@ export const ExplorerTreeActions = ({
   const { treeIsInitialized, item } = useGlobalExplorer();
 
   const createMenu = useDropdownMenu();
-  const showMenu = item ? item?.abilities?.children_create : true;
+  const canCreateChildren = item ? item?.abilities?.children_create : true;
 
   const renderFileIcon = (item: Partial<Item>) => {
     return (
@@ -47,7 +47,7 @@ export const ExplorerTreeActions = ({
               icon: <img src={createFolderSvg.src} alt="" />,
               label: t("explorer.tree.create.folder"),
               value: "info",
-              isHidden: !showMenu,
+              isHidden: !canCreateChildren,
               callback: openCreateFolderModal,
             },
             {
@@ -59,7 +59,7 @@ export const ExplorerTreeActions = ({
               }),
               label: t("explorer.tree.create.file.doc"),
               value: "info",
-              isHidden: !item?.abilities?.children_create,
+              isHidden: !canCreateChildren,
               callback: () => openCreateFileModal(ExplorerCreateFileType.DOC),
             },
             {
@@ -71,7 +71,7 @@ export const ExplorerTreeActions = ({
               }),
               label: t("explorer.tree.create.file.powerpoint"),
               value: "info",
-              isHidden: !item?.abilities?.children_create,
+              isHidden: !canCreateChildren,
               callback: () =>
                 openCreateFileModal(ExplorerCreateFileType.POWERPOINT),
             },
@@ -84,7 +84,7 @@ export const ExplorerTreeActions = ({
               }),
               label: t("explorer.tree.create.file.calc"),
               value: "info",
-              isHidden: !item?.abilities?.children_create,
+              isHidden: !canCreateChildren,
               callback: () => openCreateFileModal(ExplorerCreateFileType.CALC),
             },
           ]}
